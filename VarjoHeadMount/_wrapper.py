@@ -3,7 +3,6 @@ import time
 import ctypes
 import sys
 
-
 #
 # from VarjoHeadMount._state import Session, SessionInit
 #
@@ -36,7 +35,6 @@ class Matrix4x4(ctypes.Structure):
         ('value', ctypes.c_double * 16),
     ]
 
-
 if __name__ == '__main__':
     # import dll and define return types for all functions
     _dll_handle = ctypes.windll.LoadLibrary(
@@ -44,43 +42,43 @@ if __name__ == '__main__':
 
     _dll_handle.varjo_FrameGetPose.restype = Matrix4x4
     _dll_handle.varjo_GetCurrentTime.restype = ctypes.c_uint64
-    _dll_handle.varjo_IsGazeAllowed.restype = ctypes.c_bool
-    _dll_handle.varjo_GetVersion.restype = ctypes.c_int64
     _dll_handle.varjo_IsAvailable.restype = ctypes.c_bool
-    _dll_handle.varjo_GetErrorDesc.restype = ctypes.POINTER(ctypes.c_char * 50) #search ctypes convert pointer to char array
+    _dll_handle.varjo_GetErrorDesc.restype = ctypes.POINTER(
+        ctypes.c_char * 50)  # search ctypes convert pointer to char array
     _dll_handle.varjo_GetError.restype = ctypes.c_int64
+    _dll_handle.varjo_GetViewCount.restype = ctypes.c_int32
+    _dll_handle.varjo_SessionInit.restype = ctypes.POINTER(ctypes.c_void_p)
 
-    _dll_handle.varjo_PropertyKey_HMDConnected = ctypes.c_int64
-    _dll_handle.varjo_GetPropertyBool.restype = ctypes.c_bool
-
-    _dll_handle.varjo_GetError.restype = ctypes.c_int64
 
     varjo_session_pointer = _dll_handle.varjo_SessionInit()
+
+
+    _dll_handle.varjo_PropertyKey_HMDConnected = ctypes.c_int64
+
     a = _dll_handle.varjo_GetError(varjo_session_pointer)
 
     print(_dll_handle.varjo_IsAvailable())
-    print(_dll_handle.varjo_GetError(varjo_session_pointer)) #1 means error
+    print(_dll_handle.varjo_GetError(varjo_session_pointer))
     print('-------------------------')
     print(_dll_handle.varjo_GetErrorDesc(a).contents.value.decode())
     print('-------------------------')
-    # print(_dll_handle.varjo_GetVersion())
-    # print(_dll_handle.varjo_RequestGazeCalibration(varjo_session_pointer))
+    print(_dll_handle.varjo_GetViewCount(varjo_session_pointer))
+
+
+    #
+    _dll_handle.varjo_CreateFrameInfo.restype = ctypes.POINTER(ctypes.c_void_p)
+    varjo_frameinfo_pointer = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
+    _dll_handle.varjo_WaitSync(varjo_session_pointer, varjo_frameinfo_pointer)
+
+
+    for i in range(100):
+        _dll_handle.varjo_WaitSync(varjo_session_pointer, varjo_frameinfo_pointer)
+        matrix = _dll_handle.varjo_FrameGetPose(varjo_session_pointer, ctypes.c_int64(2))
+        print(list(matrix.value))
+        time.sleep(5)
 
 
 
-    matrix = _dll_handle.varjo_FrameGetPose(varjo_session_pointer, ctypes.c_int(2))
 
-    print(_dll_handle.varjo_GetPropertyBool(varjo_session_pointer, ctypes.c_bool()))
-
-    # for i in range(5):
-    #     # _dll_handle.varjo_RequestGazeCalibration(varjo_session_pointer)
-    #     # print(_dll_handle.varjo_GetCurrentTime(varjo_session_pointer))
-    #     # print(_dll_handle.varjo_GetViewCount(varjo_session_pointer))
-    #     print(_dll_handle.varjo_IsGazeAllowed(varjo_session_pointer))
-    #     # print(_dll_handle.varjo_FrameGetDisplayTime(varjo_session_pointer))
-    #     # print(list(matrix.value))
-    #     time.sleep(1)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)
-
-

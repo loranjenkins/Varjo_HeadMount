@@ -5,7 +5,9 @@ if __name__ == '__main__':
 
     _dll_handle.varjo_IsAvailable.restype = ctypes.c_bool
     _dll_handle.varjo_GetErrorDesc.restype = ctypes.POINTER(ctypes.c_char * 50)
+
     _dll_handle.varjo_GetError.restype = ctypes.c_int64
+
 
     varjo_session_pointer = _dll_handle.varjo_SessionInit()
 
