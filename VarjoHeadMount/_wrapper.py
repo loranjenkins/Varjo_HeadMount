@@ -3,6 +3,7 @@ import time
 import ctypes
 import sys
 from datetime import datetime
+import pandas as pd
 
 #
 # from VarjoHeadMount._state import Session, SessionInit
@@ -46,7 +47,7 @@ class ViewInfo(ctypes.Structure):
         ('viewMatrix', ctypes.c_double * 16),
     ]
 
-class Frameinfo(ctypes.Structure):
+class FrameInfo(ctypes.Structure):
     _fields_ = [
         ('displayTime', ctypes.c_int64),
         ('frameNumber', ctypes.c_int64),
@@ -55,6 +56,7 @@ class Frameinfo(ctypes.Structure):
 
 
 if __name__ == '__main__':
+
     # import dll and define return types for all functions
     _dll_handle = ctypes.windll.LoadLibrary(
         os.path.join('C:\\', 'Users', 'localadmin', 'Desktop', 'varjo-sdk', 'bin', 'VarjoLib.dll'))
@@ -69,48 +71,59 @@ if __name__ == '__main__':
     _dll_handle.varjo_SessionInit.restype = ctypes.POINTER(ctypes.c_void_p)
     _dll_handle.varjo_FrameGetDisplayTime.restype = ctypes.c_int64
     _dll_handle.varjo_GetCurrentTime.restype = ctypes.c_int64
-    _dll_handle.varjo_CreateFrameInfo.restype = Frameinfo
-
-
-    varjo_session_pointer = _dll_handle.varjo_SessionInit()
-
-
+    _dll_handle.varjo_CreateFrameInfo.restype = FrameInfo
     _dll_handle.varjo_PropertyKey_HMDConnected = ctypes.c_int64
 
-    a = _dll_handle.varjo_GetError(varjo_session_pointer)
+    #Initialize running session on varjo base
+    varjo_session_pointer = _dll_handle.varjo_SessionInit()
 
+    #Check if session is initialized correctly
+    GetError = _dll_handle.varjo_GetError(varjo_session_pointer)
     print(_dll_handle.varjo_IsAvailable())
     print(_dll_handle.varjo_GetError(varjo_session_pointer))
     print('-------------------------')
-    print(_dll_handle.varjo_GetErrorDesc(a).contents.value.decode())
+    print(_dll_handle.varjo_GetErrorDesc(GetError).contents.value.decode())
     print('-------------------------')
     print(_dll_handle.varjo_GetViewCount(varjo_session_pointer))
 
-    info = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
+
+    # info = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
 
     #
     _dll_handle.varjo_CreateFrameInfo.restype = ctypes.POINTER(ctypes.c_void_p)
+
     varjo_frameinfo_pointer = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
-    _dll_handle.varjo_WaitSync(varjo_session_pointer, varjo_frameinfo_pointer)
-
-    # _dll_handle.varjo_FrameGetDisplayTime(varjo_session_pointer)
-
-    # for i in range(100):
-    # while True:
-    #
-    #     _dll_handle.varjo_WaitSync(varjo_session_pointer, varjo_frameinfo_pointer)
-    #     matrix = _dll_handle.varjo_FrameGetPose(varjo_session_pointer, ctypes.c_int64(2))
-    #     matrix = list(matrix.value)
-    #
-    #     epoch = _dll_handle.varjo_FrameGetDisplayTime(varjo_session_pointer)
-    #     time = _dll_handle.varjo_GetCurrentTime(varjo_session_pointer)
-    #     dt = datetime.fromtimestamp(time // 1000000000)
-    #     print('Time since epoch in nanosecond:', dt, 'Pose with 1 straight -1 backwards:', matrix[10])
-
-        # time.sleep(0.5)
 
 
+    Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': []}
+
+    trigger = True
+    while trigger == True:
+        try:
+            _dll_handle.varjo_WaitSync(varjo_session_pointer, varjo_frameinfo_pointer)
+            matrix = _dll_handle.varjo_FrameGetPose(varjo_session_pointer, ctypes.c_int64(2))
+            matrix = list(matrix.value)
+            HMD_rotation = matrix[10]
+            Varjo_live_dict['HMD_rotation'].append(HMD_rotation)
+
+            epoch = _dll_handle.varjo_FrameGetDisplayTime(varjo_session_pointer)
+            Varjo_live_dict['FrameDisplayTime'].append(epoch)
+
+            time = _dll_handle.varjo_GetCurrentTime(varjo_session_pointer)
+            Varjo_live_dict['GetCurrentTime'].append(time)
+
+            dt = datetime.fromtimestamp(time / 1000000000)
+            Varjo_live_dict['DateTimeMilliseconds'].append(dt)
+
+            # print('Time since epoch in nanosecond:', dt, 'Pose with 1 straight -1 backwards:', HMD_rotation)
+
+            # time.sleep(0.5)
+
+        except:
+            trigger = False
 
 
+    df = pd.DataFrame.from_dict(Varjo_live_dict)
+    df.to_csv('Varjo_experiment_data.csv_{}.csv'.format(pd.datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)
