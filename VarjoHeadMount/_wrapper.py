@@ -37,7 +37,7 @@ class Matrix4x4(ctypes.Structure):
         ('value', ctypes.c_double * 16),
     ]
 
-class ViewInfo(ctypes.Structure):
+class varjo_ViewInfo(ctypes.Structure):
     _fields_ = [
         ('enabled', ctypes.c_int32),
         ('preferredHeight', ctypes.c_int32),
@@ -47,12 +47,35 @@ class ViewInfo(ctypes.Structure):
         ('viewMatrix', ctypes.c_double * 16),
     ]
 
-class FrameInfo(ctypes.Structure):
+class varjo_FrameInfo(ctypes.Structure):
     _fields_ = [
         ('displayTime', ctypes.c_int64),
         ('frameNumber', ctypes.c_int64),
-        ('views', ctypes.POINTER(ViewInfo)),
+        ('views', varjo_ViewInfo),
     ]
+
+class varjo_Ray(ctypes.Structure):
+    _fields_ = [
+        ('forward', ctypes.c_double * 3),
+        ('origin', ctypes.c_double * 3),
+    ]
+
+class varjo_Gaze(ctypes.Structure):
+    _fields_ = [
+        ('captureTime', ctypes.c_int64),
+        ('focusDistance', ctypes.c_double),
+        ('frameNumber', ctypes.c_int64),
+        ('gaze', varjo_Ray),
+        ('leftEye', varjo_Ray),
+        ('leftPupilSize', ctypes.c_double),
+        ('leftStatus', ctypes.c_int64),
+        ('rightEye', varjo_Ray),
+        ('rightPupilSize', ctypes.c_double),
+        ('rightStatus', ctypes.c_int64),
+        ('stability', ctypes.c_double),
+        ('status', ctypes.c_int64),
+    ]
+
 
 
 if __name__ == '__main__':
@@ -71,8 +94,10 @@ if __name__ == '__main__':
     _dll_handle.varjo_SessionInit.restype = ctypes.POINTER(ctypes.c_void_p)
     _dll_handle.varjo_FrameGetDisplayTime.restype = ctypes.c_int64
     _dll_handle.varjo_GetCurrentTime.restype = ctypes.c_int64
-    _dll_handle.varjo_CreateFrameInfo.restype = FrameInfo
-    _dll_handle.varjo_PropertyKey_HMDConnected = ctypes.c_int64
+    # _dll_handle.varjo_ViewInfo.restype = ctypes.POINTER(ViewInfo)
+
+    # _dll_handle.varjo_PropertyKey_HMDConnected.restype = ctypes.c_int64
+
 
     #Initialize running session on varjo base
     varjo_session_pointer = _dll_handle.varjo_SessionInit()
@@ -87,15 +112,19 @@ if __name__ == '__main__':
     print(_dll_handle.varjo_GetViewCount(varjo_session_pointer))
 
 
-    # info = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
-
-    #
-    _dll_handle.varjo_CreateFrameInfo.restype = ctypes.POINTER(ctypes.c_void_p)
-
+    _dll_handle.varjo_CreateFrameInfo.restype = ctypes.POINTER(varjo_FrameInfo)
     varjo_frameinfo_pointer = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
 
+    #gaze parameters
+    _dll_handle.varjo_GazeInit.restype = ctypes.c_void_p
+    _dll_handle.varjo_RequestGazeCalibration.restype = ctypes.c_void_p
+    _dll_handle.varjo_GetGaze.restype = varjo_Gaze
 
-    Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': []}
+    _dll_handle.varjo_GazeInit(varjo_session_pointer)
+    _dll_handle.varjo_RequestGazeCalibration(varjo_session_pointer)
+
+
+    Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': [], 'gaze_forward': []}
 
     trigger = True
     while trigger == True:
@@ -115,9 +144,14 @@ if __name__ == '__main__':
             dt = datetime.fromtimestamp(time / 1000000000)
             Varjo_live_dict['DateTimeMilliseconds'].append(dt)
 
-            # print('Time since epoch in nanosecond:', dt, 'Pose with 1 straight -1 backwards:', HMD_rotation)
+            gaze = _dll_handle.varjo_GetGaze(varjo_session_pointer)
+            gaze_forward = list(gaze.gaze.forward)
+            # gaze_stability = gaze.stability
+            Varjo_live_dict['gaze_forward'].append(gaze_forward)
+            # Varjo_live_dict['gaze_stability'].append(gaze_stability)
 
-            # time.sleep(0.5)
+
+            # print('Time since epoch in nanosecond:', dt, 'Pose with 1 straight -1 backwards:', HMD_rotation)
 
         except:
             trigger = False
