@@ -1,36 +1,7 @@
 import os
-import time
 import ctypes
-import sys
 from datetime import datetime
 import pandas as pd
-
-#
-# from VarjoHeadMount._state import Session, SessionInit
-#
-# # import dll and define return types for all functions
-# _sys_arch = 'x64' if sys.maxsize > 2 ** 32 else 'x86'
-# _dll_handle = ctypes.windll.LoadLibrary(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib', _sys_arch, 'VarjoLib.dll'))
-#
-# _dll_handle.varjo_FrameGetDisplayTime.restype = ctypes.POINTER(Session)  # nanoseconds from epoch
-# _dll_handle.varjo_FrameGetPose.restype = ctypes.POINTER(Session)  # pose matrix
-#
-#
-# def get_time(POINTER) -> State:
-#     """
-#     Call this function to get nanoseconds from epoch
-#     """
-#
-#     return _dll_handle.FrameGetDisplayTime()
-#
-# def get_headpose(POINTER, posetype: int):
-#     """
-#     Call this function to get headpose matrix
-#     """
-#
-#     return _dll_handle.varjo_FrameGetPose(ctypes.c_int(posetype))
-
-
 
 class Matrix4x4(ctypes.Structure):
     _fields_ = [
@@ -75,8 +46,6 @@ class varjo_Gaze(ctypes.Structure):
         ('stability', ctypes.c_double),
         ('status', ctypes.c_int64),
     ]
-
-
 
 if __name__ == '__main__':
 
@@ -124,7 +93,8 @@ if __name__ == '__main__':
     _dll_handle.varjo_RequestGazeCalibration(varjo_session_pointer)
 
 
-    Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': [], 'gaze_forward': []}
+    # Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': [], 'gaze_forward': [], 'epoch': []}
+    Varjo_live_dict = {'epoch': [], 'HMD_rotation': [],'gaze_forward': []}
 
     trigger = True
     while trigger == True:
@@ -135,21 +105,24 @@ if __name__ == '__main__':
             HMD_rotation = matrix[10]
             Varjo_live_dict['HMD_rotation'].append(HMD_rotation)
 
-            epoch = _dll_handle.varjo_FrameGetDisplayTime(varjo_session_pointer)
-            Varjo_live_dict['FrameDisplayTime'].append(epoch)
-
-            time = _dll_handle.varjo_GetCurrentTime(varjo_session_pointer)
-            Varjo_live_dict['GetCurrentTime'].append(time)
-
-            dt = datetime.fromtimestamp(time / 1000000000)
-            Varjo_live_dict['DateTimeMilliseconds'].append(dt)
-
             gaze = _dll_handle.varjo_GetGaze(varjo_session_pointer)
             gaze_forward = list(gaze.gaze.forward)
-            # gaze_stability = gaze.stability
             Varjo_live_dict['gaze_forward'].append(gaze_forward)
-            # Varjo_live_dict['gaze_stability'].append(gaze_stability)
 
+            time_now = datetime.utcnow()
+            epoch_time = int((time_now - datetime(1970, 1, 1)).total_seconds()*1000000)
+            Varjo_live_dict['epoch'].append(epoch_time)
+
+            # gaze_stability = gaze.stability
+            # Varjo_live_dict['gaze_stability'].append(gaze_stability)
+            # epoch = _dll_handle.varjo_FrameGetDisplayTime(varjo_session_pointer)
+            # Varjo_live_dict['FrameDisplayTime'].append(epoch)
+            #
+            # time = _dll_handle.varjo_GetCurrentTime(varjo_session_pointer)
+            # Varjo_live_dict['GetCurrentTime'].append(time)
+            #
+            # dt = datetime.fromtimestamp(time / 1000000000)
+            # Varjo_live_dict['DateTimeMilliseconds'].append(dt)
 
             # print('Time since epoch in nanosecond:', dt, 'Pose with 1 straight -1 backwards:', HMD_rotation)
 
@@ -158,6 +131,6 @@ if __name__ == '__main__':
 
 
     df = pd.DataFrame.from_dict(Varjo_live_dict)
-    df.to_csv('Varjo_experiment_data.csv_{}.csv'.format(pd.datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
+    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_experiment_data.csv_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)
