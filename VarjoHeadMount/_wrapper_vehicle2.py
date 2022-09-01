@@ -57,7 +57,7 @@ if __name__ == '__main__':
     _dll_handle.varjo_GetCurrentTime.restype = ctypes.c_uint64
     _dll_handle.varjo_IsAvailable.restype = ctypes.c_bool
     _dll_handle.varjo_GetErrorDesc.restype = ctypes.POINTER(
-        ctypes.c_char * 50)  # search ctypes convert pointer to char array
+        ctypes.c_char * 50)
     _dll_handle.varjo_GetError.restype = ctypes.c_int64
     _dll_handle.varjo_GetViewCount.restype = ctypes.c_int32
     _dll_handle.varjo_SessionInit.restype = ctypes.POINTER(ctypes.c_void_p)
@@ -80,11 +80,11 @@ if __name__ == '__main__':
     print('-------------------------')
     print(_dll_handle.varjo_GetViewCount(varjo_session_pointer))
 
-
+    #Initialize Pointer
     _dll_handle.varjo_CreateFrameInfo.restype = ctypes.POINTER(varjo_FrameInfo)
     varjo_frameinfo_pointer = _dll_handle.varjo_CreateFrameInfo(varjo_session_pointer)
 
-    #gaze parameters
+    #Forward gaze functions
     _dll_handle.varjo_GazeInit.restype = ctypes.c_void_p
     _dll_handle.varjo_RequestGazeCalibration.restype = ctypes.c_void_p
     _dll_handle.varjo_GetGaze.restype = varjo_Gaze
@@ -94,8 +94,9 @@ if __name__ == '__main__':
 
 
     # Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': [], 'gaze_forward': [], 'epoch': []}
-    Varjo_live_dict = {'epoch': [], 'HMD_rotation': [],'gaze_forward': []}
+    Varjo_live_dict = {'epoch_vehicle2': [], 'HMD_rotation_vehicle2': [],'gaze_forward_vehicle2': []}
 
+    # Collect data in loop and write to csv
     trigger = True
     while trigger == True:
         try:
@@ -110,7 +111,7 @@ if __name__ == '__main__':
             Varjo_live_dict['gaze_forward'].append(gaze_forward)
 
             time_now = datetime.utcnow()
-            epoch_time = int((time_now - datetime(1970, 1, 1)).total_seconds()*1000000)
+            epoch_time = int((time_now - datetime(1970, 1, 1)).total_seconds()*1000000000)
             Varjo_live_dict['epoch'].append(epoch_time)
 
             # gaze_stability = gaze.stability
@@ -124,13 +125,13 @@ if __name__ == '__main__':
             # dt = datetime.fromtimestamp(time / 1000000000)
             # Varjo_live_dict['DateTimeMilliseconds'].append(dt)
 
-            # print('Time since epoch in nanosecond:', dt, 'Pose with 1 straight -1 backwards:', HMD_rotation)
+            print('Time since epoch in nanosecond:', epoch_time, 'Pose with 1 straight -1 backwards:', HMD_rotation)
 
         except:
             trigger = False
 
 
     df = pd.DataFrame.from_dict(Varjo_live_dict)
-    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_experiment_data.csv_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
+    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_data_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)
