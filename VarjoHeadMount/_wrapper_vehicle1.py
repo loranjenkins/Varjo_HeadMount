@@ -125,7 +125,7 @@ if __name__ == '__main__':
             # dt = datetime.fromtimestamp(time / 1000000000)
             # Varjo_live_dict['DateTimeMilliseconds'].append(dt)
 
-            print('Time since epoch in nanosecond:', epoch_time, 'Pose with 1 straight -1 backwards:', HMD_rotation)
+            print('Epoch:', epoch_time, 'Pose:', HMD_rotation)
 
         except:
             trigger = False
