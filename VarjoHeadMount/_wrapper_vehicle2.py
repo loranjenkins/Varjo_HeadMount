@@ -104,15 +104,15 @@ if __name__ == '__main__':
             matrix = _dll_handle.varjo_FrameGetPose(varjo_session_pointer, ctypes.c_int64(2))
             matrix = list(matrix.value)
             HMD_rotation = matrix[10]
-            Varjo_live_dict['HMD_rotation'].append(HMD_rotation)
+            Varjo_live_dict['HMD_rotation_vehicle2'].append(HMD_rotation)
 
             gaze = _dll_handle.varjo_GetGaze(varjo_session_pointer)
             gaze_forward = list(gaze.gaze.forward)
-            Varjo_live_dict['gaze_forward'].append(gaze_forward)
+            Varjo_live_dict['gaze_forward_vehicle2'].append(gaze_forward)
 
             time_now = datetime.utcnow()
             epoch_time = int((time_now - datetime(1970, 1, 1)).total_seconds()*1000000000)
-            Varjo_live_dict['epoch'].append(epoch_time)
+            Varjo_live_dict['epoch_vehicle2'].append(epoch_time)
 
             # gaze_stability = gaze.stability
             # Varjo_live_dict['gaze_stability'].append(gaze_stability)
@@ -132,6 +132,6 @@ if __name__ == '__main__':
 
 
     df = pd.DataFrame.from_dict(Varjo_live_dict)
-    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_data_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
+    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_data_vehicle2{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)
