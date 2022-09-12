@@ -132,6 +132,6 @@ if __name__ == '__main__':
 
 
     df = pd.DataFrame.from_dict(Varjo_live_dict)
-    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_data_vehicle1{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
+    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_data_vehicle1_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)
