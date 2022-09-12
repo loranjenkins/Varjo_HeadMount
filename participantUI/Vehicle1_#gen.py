@@ -47,9 +47,9 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     right_dialog = ParticipantInfoDialog(participant_numbers['vehicle_1'])
-    right_dialog.show()
 
-    right_dialog.accepted.connect(save_participant_info('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
+
+    right_dialog.accepted.connect(lambda: save_participant_info('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
 
 
     sys.exit(app.exec_())
