@@ -55,7 +55,7 @@ if __name__ == '__main__':
     right_dialog = ParticipantInfoDialog(participant_numbers['vehicle_1'])
 
 
-    right_dialog.accepted.connect(lambda: save_participant_info('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
+    right_dialog.accepted.connect(lambda: save_participant_info(r'C:\Users\lbogaart\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
 
     sys.exit(app.exec_())
 
