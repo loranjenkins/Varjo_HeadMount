@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
 
     # Varjo_live_dict = {'FrameDisplayTime': [], 'GetCurrentTime': [], 'DateTimeMilliseconds': [], 'HMD_rotation': [], 'gaze_forward': [], 'epoch': []}
-    Varjo_live_dict = {'epoch_vehicle1': [], 'HMD_rotation_vehicle1': [],'gaze_forward_vehicle1': []}
+    Varjo_live_dict = {'epoch_vehicle1': [], 'HMD_rotation_vehicle1': [], 'gaze_forward_vehicle1': []}
 
     # Collect data in loop and write to csv
     trigger = True
@@ -132,6 +132,6 @@ if __name__ == '__main__':
 
 
     df = pd.DataFrame.from_dict(Varjo_live_dict)
-    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\Varjo_data_vehicle1_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
+    df.to_csv('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\varjodata\Varjo_data_vehicle1_{}.csv'.format(datetime.now().strftime("%Y-%m-%d %H%M%S")), index=False)
 
     _dll_handle.varjo_SessionShutDown(varjo_session_pointer)

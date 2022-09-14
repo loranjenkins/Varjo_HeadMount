@@ -34,7 +34,7 @@ def get_used_participant_numbers():
     return all_numbers
 
 def save_participant_info(path, number):
-    with open(os.path.join(path, 'participant#_vehicle1_{}.txt'.format(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))), 'a') as f:
+    with open(os.path.join(path, 'participant#_vehicle2_{}.txt'.format(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))), 'a') as f:
         f.write(str(number) + '\n')
 
 if __name__ == '__main__':
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     # generate participant numbers
     all_used_numbers = get_used_participant_numbers()
-    participant_numbers = {'vehicle_1': []}
+    participant_numbers = {'vehicle_2': []}
 
     for key in participant_numbers:
         participant_numbers[key] = random.randint(1000, 9999)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     write_participant_numbers(participant_numbers.values())
 
     app = QApplication(sys.argv)
-    right_dialog = ParticipantInfoDialog(participant_numbers['vehicle_1'])
+    right_dialog = ParticipantInfoDialog(participant_numbers['vehicle_2'])
 
 
     right_dialog.accepted.connect(lambda: save_participant_info('C:\\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
