@@ -10,7 +10,7 @@ from participantUI.participantdialog import ParticipantInfoDialog
 def write_participant_numbers(numbers: list):
     script_dir = Path(__file__).parent.parent
 
-    path_to_file = os.path.join(script_dir, 'data', 'participantinfo', 'all_participants#.txt')
+    path_to_file = os.path.join(script_dir, 'data', 'participantinfo', 'all_participants#_vehicle2.txt')
 
     with open(path_to_file, 'a') as f:
         for number in numbers:
@@ -21,14 +21,14 @@ def get_used_participant_numbers():
 
     all_numbers = []
 
-    path_to_file = os.path.join(script_dir, 'data', 'participantinfo', 'all_participants#.txt')
+    path_to_file = os.path.join(script_dir, 'data', 'participantinfo', 'all_participants#_vehicle2.txt')
 
     if os.path.exists(path_to_file):
         with open(path_to_file, 'r') as f:
             for line in f:
                 all_numbers.append(int(line))
     else:
-        with open(os.path.join(script_dir, 'data', 'participantinfo', 'all_participants#.txt'), 'w'):
+        with open(os.path.join(script_dir, 'data', 'participantinfo', 'all_participants#_vehicle2.txt'), 'w'):
             pass
 
     return all_numbers
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     right_dialog = ParticipantInfoDialog(participant_numbers['vehicle_2'])
 
 
-    right_dialog.accepted.connect(lambda: save_participant_info(r'C:\Users\localadmin\PycharmProjects\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
+    right_dialog.accepted.connect(lambda: save_participant_info(r'C:\Users\lbogaart\Varjo_HeadMount\data\participantinfo', right_dialog.participant_info))
 
     sys.exit(app.exec_())
 
